@@ -142,8 +142,85 @@ GpsStatus.Listener listener = new GpsStatus.Listener() {
     }
 ``` 
 ###2. 移动定位模式选择
-####1. 
+####1. 定位精度选择
+```
+ selectMode = (RadioGroup)findViewById(R.id.selectMode);                 //单选按钮组  选择定位精度
+  selectMode.setOnCheckedChangeListener(new OnCheckedChangeListener() {   //监听单选按钮
 
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                // TODO Auto-generated method stub
+                String ModeInformation = null;
+                switch (checkedId) {
+                    case R.id.radio_hight:
+                        tempMode = LocationMode.Hight_Accuracy;
+                        ModeInformation = getString(R.string.hight_accuracy_desc);
+                        //高精度定位模式下，会同时使用GPS、Wifi和基站定位，返回的是当前条件下精度最好的定位结果
+                        break;  
+                    case R.id.radio_low:
+                        tempMode = LocationMode.Battery_Saving;
+                        ModeInformation = getString(R.string.saving_battery_desc);
+                        //低功耗定位模式下，仅使用网络定位即Wifi和基站定位，返回的是当前条件下精度最好的网络定位结果
+                        break;
+                    case R.id.radio_device:
+                        tempMode = LocationMode.Device_Sensors;
+                        ModeInformation = getString(R.string.device_sensor_desc);
+                        //仅用设备定位模式下，只使用用户的GPS进行定位。这个模式下，由于GPS芯片锁定需要时间，首次定位速度会需要一定的时间
+                        break;
+                    default:
+                        break;
+                }
+                ModeInfor.setText(ModeInformation);
+            }
+        });
+```
+####2.定位类型选择
+```
+selectCoordinates= (RadioGroup)findViewById(R.id.selectCoordinates);     //单选按钮组  选择定位类型
+selectCoordinates.setOnCheckedChangeListener(new OnCheckedChangeListener() {//监听单选按钮
+
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                // TODO Auto-generated method stub
+                switch (checkedId) {
+                    case R.id.radio_gcj02:
+                        tempcoor="gcj02";//国家测绘局标准
+                        break;
+                    case R.id.radio_bd09ll:
+                        tempcoor="bd09ll";//百度经纬度标准
+                        break;
+                    case R.id.radio_bd09:
+                        tempcoor="bd09";//百度墨卡托标准
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+```
+####3.设置查询条件
+```
+private void initLocation(){
+        LocationClientOption option = new LocationClientOption();
+        option.setLocationMode(tempMode);//可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
+        option.setCoorType(tempcoor);//可选，默认gcj02，设置返回的定位结果坐标系，
+        int span=1000;
+        try {
+            span = Integer.valueOf(frequence.getText().toString());
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        option.setScanSpan(span);//可选，默认0，即仅定位一次，设置发起定位请求的间隔需要大于等于1000ms才是有效的
+        option.setIsNeedAddress(checkGeoLocation.isChecked());//可选，设置是否需要地址信息，默认不需要
+        option.setOpenGps(false);//可选，默认false,设置是否使用gps
+        option.setLocationNotify(true);//可选，默认false，设置是否当gps有效时按照1S1次频率输出GPS结果
+        option.setIgnoreKillProcess(true);//可选，默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop的时候杀死这个进程，默认不杀死
+        option.setEnableSimulateGps(false);//可选，默认false，设置是否需要过滤gps仿真结果，默认需要
+        option.setIsNeedLocationDescribe(true);//可选，默认false，设置是否需要位置语义化结果，可以在BDLocation.getLocationDescribe里得到，结果类似于“在北京天安门附近”
+        option.setIsNeedLocationPoiList(true);//可选，默认false，设置是否需要POI结果，可以在BDLocation.getPoiList里得到
+        mLocationClient.setLocOption(option);
+    }
+```
 ###2. 播放MP3音乐
 ####1.简要说明  
 #####1.实现方式
